@@ -1,0 +1,82 @@
+Oporanu Ioan Nicolae
+Tema 3 - APD
+
+Am implementat din prima bonusul
+
+-Pentru a stoca datele am folosit o structura numita topology care contine 
+vectorii de workeri pentru fiecare coordonator si dimensiunea acestora
+
+-Programul functioneaza in felul urmator:
+    *La inceput fiecare coordonator isi citeste vectorul de workeri
+
+    *Acest lucru de realizeaza prin intermediul functiei de read_input
+
+    *Apoi clusterul 0 si 1 isi trimit dimensiunile clusterului 2 si clusterul 2
+     le trimite acestora dimensiunea sa. Dupa aceasta, clusterul 2 ii trimite lui
+     0 dimensiunea clusterului 1 si lui 1 dimensiunea clusterului 0. Astfel fiecare
+     cluster stie toate dimensiunile topologiei.
+
+    *Analog se trimit vectorii de workeri. Clusterul 0 si 1 ii trimit clusterului 2
+     vectorii lor, iar clusterul 2 le trimite acestora vectorul sau. Apoi clusterul 2
+     le trimite clusterului 1 vectorul de workeri al lui 0 si clusterului 0 vectorul de 
+     workeri ai lui 1.
+
+    *Acum toate clusterele stiu toti vectorii de workeri si toate dimensiunile deci se poate
+     creea stringul topologiei. Acesta este creeat seprarat de fiecare coordonator prin intermediul
+     functiei Make_topology, este afisat  si este trimis workerilor sai unde este afisata.
+
+    *Apoi coordonatorul 0 creeaza vectorul care trebuie prelucrat astfel:
+        *Creeaza vectorul cu elementele corespunzatoare specificate in enunt.
+
+        *Completeaza vectorul cu 0 pana ce ajunge la o dimensiune divizibila cu
+         numarul total de workeri.
+
+        *Apoi trimite coordonatorului 2 mai intai portiunea din vectorul mare care trebuie prelucrata
+         de coordonatorul 1.
+
+        *Apoi trimite coordonatorului 2 mai intai portiunea din vectorul mare care trebuie prelucrata
+         de coordonatorul 2.
+
+        *Apoi trimite workerilor sai fragmentele care trebuie prelucrate de acestia.
+
+        *Primeste de la workeri fragmentele prelucrate si le asambleaza.
+
+        *Primeste de la clusterul 2 portiunea ce trebuie prelucrata de clusterul 2
+         si o pune in vectorul initial.
+
+        *Primeste de la clusterul 2 portiunea ce trebuie prelucrata de clusterul 1
+         si o pune in vectorul initial.  
+
+        *Afiseaza vectorul.
+
+    *Coordonatorul 2 face urmatoarele lucruri:
+        *Primeste de la clusterul 0 portiunea de vector ce trebuie prelucrata de clusterul 1
+       
+        *Ii trimite clusterului 1 portiunea primita mai sus.
+
+        *Primeste de la clusterul 0 portiunea de vector pe care trebuie sa o prelucreze el singur.
+
+        *Imparte aceasta portiune in fragmente si le trimite workerilor sai.
+
+        *Primeste de la workeri fragmentele prelucrate si le asambleaza.
+
+        *Trimite clusterului 0 portiunea sa de vector prelucrata.
+
+        *Primeste de la clusterul 1 portiunea ce a fost prelucrata de clusterul 1
+         si o trimite clusterului 0.
+
+    *Coordonatorul 1 face urmatoarele lucruri:
+        *Primeste de la clusterul 2 portiunea de vector pe care trebuie sa o prelucreze
+
+        *Trimite workerilor sai fragmentele din aceasta portiune 
+
+        *Primeste de la workeri fragmentele prelucrate
+
+        *Ii trimite clusterului 2 portiunea de vector prelucrata
+
+    *Fiecare worker face urmatoarele lucruri:
+        *Primeste de la coordonator bucata de fragment ce trebuie prelucrata
+
+        *Dubleaza fiecare element din acest fragment
+
+        *Trimite inapoi coordonatorului fragmentul prelucrat
