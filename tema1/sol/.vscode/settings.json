@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "genetic_algorithm_par.h": "c",
+        "typeinfo": "c"
+    }
+}

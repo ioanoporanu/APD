@@ -1,0 +1,54 @@
+Oporanu Ioan Nicolae 334 CA
+
+->Clasa ReadInpData citeste din fisierul dat ca parametru
+in linia de comanda fisierele ce urmeaza a fi prelucrate
+, dimensiunea unui fragment si le salveaza,.
+
+->Clasa CreateMapTask creeaza task-urile necesare pentru serviceExecutor
+adica formeaza obiecte de tipul TaskMap care contin campurile
+necesare pentru prelucrarea acelui fragment. Tot aici sunt
+calculate offset-ul si dimensiunea fiecarui fragment, ultimul fragment din fisier
+avand dimensiunea posibil mai mica.
+
+->Clasa TaskMap este clasa care defineste obiectele acceptate
+de executor service si clasa care prelucreaza efectiv fragmentele
+si formeaza rezultatele pentru a fi mai departe preluate de TaskReduce.
+    -In metoda call din aceasta clasa se prelucreaza fiecare fragment
+    in felul urmator: se verifica daca acesta incepe in mijlocul unui cuvant
+    si daca da se calculeaza cu cat trebuie sa se mute la dreapta offsetul pentru
+    a sari peste acest cuvant, apoi se verifica daca acesta se termina in mojlocul unui
+    cuvant si daca da se calculeaza cat trebuie sa se deplasese in dreapta pentru
+    a prelucra si acel cuvant. Apoi pentru acest nou fragment se calculeaza toate
+    datele asa cum este specificat in enunt si se formeaza dictionarul si lista
+    de cuvinte.
+
+->Clasa TaskMapResult contine rezultatul oferit de un obiect TaskMap pentru un fragment: adica
+un dictionar si o lista de cuvinte. Aceste rezultate for fi pasate mai departe pentru etapa de Reduce.
+*Dupa terminarea tuturor TaskMap-urilor va rezulta un dictionar de obiecte TaskMapResult, fiecare obiect reprezentand
+rezultatul pentru un fragment unde cheia este numele fisierului din care face parte acel fragment, iar valoarea este o lita
+ce contine rezultatele oferite de partea de Map pentru acel fisier.
+
+->Clasa CreateReduceTasks creeaza task-urile necesare pentru serviceExecutor adica formeaza obiecte de tipul TaskReduce.
+Aceasta preia dictionarul rezultat din etapa de Map mentionat mai sus. Apoi creeaza obiecte de tip TaskReduce folosind datele
+de la etapa de Map pe care le paseaza serviceExecutorului. Apoi aceste le prelucreaza prin metoda call. Fiecare TaskReduce creat
+va primii datele ce trebuie prelucrate pentru cate un fisier. In functia call din acesta, se vor unii toate dictionarele de cuvinte
+pentru toate fragmemtele din acel fisier si pe acest nou dictionar se vor realiza urmatoarele calcule.
+
+->Clasa TaskReduce realizeaza operatia de reduce unind dictionarele pentru fiecare fragment si calculand
+rangul si lungimea maxima si cuvintele care au lungimea maxima.
+
+->Clasa TaskReduceResult contine rezultatele generate de un obiect TaskReduce. Toate acestea sunt
+colectate intr-o lista pentru a urma ca mai apoi sa fie scrise in fisierul de output.
+
+->Clasa WriteOutput preia lista de obiecte ReduceResult pe care o sorteaza dupa rank si apoi
+formeaza string-urile ce urmeaza sa fie scrise in fisier si le scrie.
+
+->Flow-ul este urmatorul:
+-Se citesc dimensiunea si fisierele din fisierul de intrare
+-Se creeaza task-ruile pentru pentru etape de Map(CreateMapTask)
+-Se realizeaza etapa de Map (TaskMap)
+-Se salveaza rezultatele de la etapa de Map(TaskMapResult)
+-Se creeaza task-urile pentru etapa de Reduce(CreateReduceTasks)
+-Se realizeaza etapa de Reduce(TaskReduce)
+-Se salveaza rezultatele de la etapa de Reduce(TaskReduceResult
+-Se scriu in fisier datele obtinute sortate(WriteOutput)

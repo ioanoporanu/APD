@@ -1,0 +1,72 @@
+TEMA 1 - APD
+OPORANU IOAN NICOLAE 334CA
+
+
+-Implementarea mea paralelizata a pornit de la cea secventiala astfel 
+am modificat doar fisierele: tema1_par.c, genetic_algorithm_par.c, genetic_algorithm_par.h.
+-In structura inddividual din fisierul individual_par.h am adaugat inca un camp: nr_of_ones,
+care imi va folosi pentru a optimiza functia de comparatie folosita in sortare. Acest camp
+stocheaza numarul de biti de 1 pe care il are un cromozom si astefel nu mai este necesar for-ul
+care calula mereu acest lucru.
+-In main s-a modificat doar faptul ca citesc inca un parametru din linia de comanda, adica 
+numarul de thread-uri P.
+-In fisierul genetic_algorithm_par.c:
+    -Am adaugat functia start_threads: care porneste thread-urile care vor executa operatiile.
+    -Mi-am facut o structura thread_input care contine toate
+    informatiile care sunt necesare unui thread:
+    *	int object_count;
+	*   int generations_count;
+	*   int P;
+	*   int thread_id;
+	*   int sack_capacity;
+	*   const sack_object *objects;
+	*   individual *current_generation;
+	*   individual *next_generation;
+	*   individual *tmp;
+	*   pthread_barrier_t *barrier;
+    -Aceasta are nevoie de toti parametrii functiei run_genetic_alorithm si pe langa acestia:
+    *   O bariera
+    *   numarul de thread-uri
+    *   id-ul thread-ului   
+    *   current si next generation 
+    -Pentru fiecare thread am creat cate o astfel de structura si am dat-o argument
+    pentru functia ce va rula pe acel thread.
+    -Functia run_genetic_alorithm are structura celei din implementarea secventiala 
+    insa in aceasta am incercat sa paralelizez toate for-urile. Astfel intr-un thread 
+    in loc sa se execute de la 0 la object_count acesta se va executa de la start la end
+    unde start si end sunt calculate in functie de id-ul thread-ului.
+    -Am modificat functia compute fitness astfel incat primul for sa fie de la start la end
+    care sunt calculate in functie de id-ul thread-ului. Aceasta calculeaza de asemenea si 
+    numarul de biti de 1 pe care ii are un cromozom. 
+    -Initializarea primei generatii se face paralelizat de la start la end.
+    -Am paralelizat for-urile care reprezinta toate modificarile ce sunt facut asupra generatiei
+    de cromozomi sa fie facute de la start la end, adica sa fie paralelizate:
+        -copy_individual 
+        -mutate_bit_string_1
+        -mutate_bit_string_2
+        -crossover
+    -Flow-ul functiei genetic_algorithm_par.c este urmatorul:
+        -Se calculeaza generatia initiala de la start la end.
+        -Se asteapta ca toate thread-urile sa termine de calculat.
+        -In for-ul dupa k pentru generatii:
+            -Se calculeaza fitness-ul pentru fiecare chromozom cu functia
+            paralelizata compute_fitness si se asteapta ca toate thread-urile
+            sa termine.
+            -Se sorteaza vectorul ce contine fitness-urile pentru chromozomi doar
+            pe un singur thread si se astepta sa fie facuta aceasta sortare.
+            -Se realizeaza mutatiile pe cromozomi ca la implementarea secventiala
+            doar ca acum for-urile sunt paralelizate:
+                -copy_individual 
+                -mutate_bit_string_1
+                -mutate_bit_string_2
+                -crossover
+            -Se asteapta ca toate thread-urile sa termine aceste operatii.
+            -Se realizeaza interschimbarea intre current_generation si next_generation.
+            -Se calculeaza indecsii generatiei curente.
+            -Se printeaza cel mai bun fitness din 5 in 5 generatii doar de catre un singur
+            thread.
+            -Se asteapta sa se termine toate aceste operatii de catre toate thread-urile    
+            inainte de a incepe urmatorul pas din for.
+            -Dupa ce se iese din for-ul dupa k se mai calculeaza inca o data fitness-ul,
+            se sorteaza vectorul de fitness si se mai afiseaza inca o data cel mai bun  
+            fitness.
